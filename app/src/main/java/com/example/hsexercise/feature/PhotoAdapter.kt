@@ -13,6 +13,7 @@ import com.example.hsexercise.feature.database.FeatureModel
 import kotlinx.android.synthetic.main.feature_item.view.*
 
 class PhotoAdapter(var featureModel: List<FeatureModel>): RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
+
     var visibleInt :Int = 1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {

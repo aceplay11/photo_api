@@ -6,14 +6,14 @@ import com.example.hsexercise.feature.database.FeatureModel
 import io.reactivex.observers.DisposableObserver
 
 
-class FeatureViewModel : AndroidViewModel(Application()) {
+class FeatureViewModel : ViewModel() {
 
-    private var repository: PhotoRepository = PhotoRepository(getApplication())
+    private lateinit var repository: PhotoRepository
 
-    private val photoResults = MutableLiveData<List<FeatureModel>>()
+    private val photoResults = MutableLiveData<FeatureModel>()
     private val loadingVisibility: MutableLiveData<Int> = MutableLiveData()
     private val errorMessage: MutableLiveData<String> = MutableLiveData()
-    private lateinit var disposableObserver: DisposableObserver<List<FeatureModel>>
+    private lateinit var disposableObserver: DisposableObserver<FeatureModel>
 
     class Factory :
         ViewModelProvider.Factory {
@@ -21,7 +21,7 @@ class FeatureViewModel : AndroidViewModel(Application()) {
         override fun <T : ViewModel> create(modelClass: Class<T>) = FeatureViewModel() as T
     }
 
-    fun getPhotosResults(): LiveData<List<FeatureModel>>{
+    fun getPhotosResults(): LiveData<FeatureModel>{
         return photoResults
     }
 
@@ -29,18 +29,18 @@ class FeatureViewModel : AndroidViewModel(Application()) {
         return errorMessage
     }
 
-    fun getLoading(): LiveData<Int>{
+    fun isLoading(): LiveData<Int>{
         return loadingVisibility
     }
 
     fun getData(){
 
-        disposableObserver = object: DisposableObserver<List<FeatureModel>>(){
+        disposableObserver = object: DisposableObserver<FeatureModel>(){
             override fun onComplete() {
                 loadingVisibility.postValue(0)
             }
 
-            override fun onNext(t: List<FeatureModel>) {
+            override fun onNext(t: FeatureModel) {
                 photoResults.postValue(t)
                 loadingVisibility.postValue(1)
             }
@@ -50,12 +50,15 @@ class FeatureViewModel : AndroidViewModel(Application()) {
             }
 
         }
-        repository.loadPhotos()
+        repository.loadPhotos(disposableObserver)
     }
 
     fun dispose(){
         if (!disposableObserver.isDisposed and (disposableObserver != null))
             disposableObserver.dispose()
+    }
+    fun setRepo(application: Application){
+        repository = PhotoRepository(application)
     }
 }
 

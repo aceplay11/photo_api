@@ -13,8 +13,8 @@ import kotlinx.android.synthetic.main.activity_feature.*
 class FeatureActivity : BaseActivity<FeatureViewModel>() {
     override val viewModelClass = FeatureViewModel::class.java
     override val layoutResId = R.layout.activity_feature
-    lateinit var photoList: List<FeatureModel>
-    lateinit var photoAdapter: PhotoAdapter
+    private var photoList = ArrayList<FeatureModel>()
+    private var photoAdapter: PhotoAdapter? = null
 
     override fun provideViewModelFactory() = FeatureViewModel.Factory()
 
@@ -25,14 +25,16 @@ class FeatureActivity : BaseActivity<FeatureViewModel>() {
     }
 
     private fun setupViewModel(){
+        viewModel.setRepo(application)
         viewModel.getData()
         viewModel.getPhotosResults().observe(this, Observer {
-            photoList = it
-            photoAdapter.notifyDataSetChanged()
+            photoList.add(it)
+            photoAdapter?.notifyDataSetChanged()
         } )
 
-        viewModel.getLoading().observe(this, Observer {
-            photoAdapter.visibleInt = it
+        viewModel.isLoading().observe(this, Observer {
+            photoAdapter?.visibleInt = it
+            photoAdapter?.notifyDataSetChanged()
         })
 
         viewModel.getErrorMessage().observe(this, Observer {

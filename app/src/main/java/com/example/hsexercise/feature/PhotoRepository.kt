@@ -3,9 +3,11 @@ package com.example.hsexercise.feature
 import android.app.Application
 import com.example.hsexercise.common.DatabaseProvider
 import com.example.hsexercise.common.NetworkProvider
+import com.example.hsexercise.feature.database.FeatureModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
 
 class PhotoRepository(app: Application) {
@@ -16,21 +18,20 @@ class PhotoRepository(app: Application) {
     private val featureTableDao =
         DatabaseProvider.provideRoomDatabase(app).featureTableDao()
 
-    fun loadPhotos() {
+    fun loadPhotos(observer: DisposableObserver<FeatureModel>) {
         subscription = Observable.fromCallable { featureTableDao.getAll() }
             .concatMap {
                 if (it == it.isEmpty)
                     webService.getPhotosList().concatMap {
-                            featureModelList ->
-                        featureTableDao.insertAll(featureModelList)
-                        Observable.just(featureModelList)
+                            featureModel ->
+                        featureTableDao.insert(featureModel)
+                        Observable.just(featureModel)
                     }
 
                 else
                     Observable.just(it)
             }.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe {  }
             .subscribe()
 
     }
